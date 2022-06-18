@@ -1,3 +1,4 @@
+using System;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -19,7 +20,7 @@ public class Startup
     {
         Environment = env;
         Configuration = configuration;
-        
+        Console.WriteLine("Jwt:MetadataAddress=" + Configuration["Jwt:MetadataAddress"]);
     }
 
     public IConfiguration Configuration { get; }
