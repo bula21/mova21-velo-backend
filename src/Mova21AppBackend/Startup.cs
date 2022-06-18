@@ -17,16 +17,10 @@ public class Startup
 {
     private const string OpenIdConnectPolicyName = "OpenIDConnectPolicy";
 
-    public Startup(IWebHostEnvironment env, IConfiguration configuration, ILogger<Startup> logger)
+    public Startup(IWebHostEnvironment env, IConfiguration configuration)
     {
         Environment = env;
         Configuration = configuration;
-
-        logger.LogWarning("Directus:Email=" + Configuration["Directus:Email"]);
-        logger.LogWarning("Directus:BaseUrl=" + Configuration["Directus:BaseUrl"]);
-        logger.LogWarning("Jwt:Authority=" + Configuration["Jwt:Authority"]);
-        logger.LogWarning("Jwt:Audience=" + Configuration["Jwt:Audience"]);
-        logger.LogWarning("Jwt:MetadataAddress=" + Configuration["Jwt:MetadataAddress"]);
     }
 
     public IConfiguration Configuration { get; }
@@ -73,8 +67,14 @@ public class Startup
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger)
     {
+        logger.LogWarning("Directus:Email=" + Configuration["Directus:Email"]);
+        logger.LogWarning("Directus:BaseUrl=" + Configuration["Directus:BaseUrl"]);
+        logger.LogWarning("Jwt:Authority=" + Configuration["Jwt:Authority"]);
+        logger.LogWarning("Jwt:Audience=" + Configuration["Jwt:Audience"]);
+        logger.LogWarning("Jwt:MetadataAddress=" + Configuration["Jwt:MetadataAddress"]);
+        
         if (env.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
