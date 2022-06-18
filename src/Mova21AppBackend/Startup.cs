@@ -67,14 +67,8 @@ public class Startup
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-    public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger)
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
-        logger.LogWarning("Directus:Email=" + Configuration["Directus:Email"]);
-        logger.LogWarning("Directus:BaseUrl=" + Configuration["Directus:BaseUrl"]);
-        logger.LogWarning("Jwt:Authority=" + Configuration["Jwt:Authority"]);
-        logger.LogWarning("Jwt:Audience=" + Configuration["Jwt:Audience"]);
-        logger.LogWarning("Jwt:MetadataAddress=" + Configuration["Jwt:MetadataAddress"]);
-        
         if (env.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
