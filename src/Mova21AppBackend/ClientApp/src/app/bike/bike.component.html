@@ -1,0 +1,11 @@
+<div>
+  <div *ngFor="let availability of availabilities?.availabilities">
+    <h3>{{availability.type}}</h3>   
+    <div class="input-group mb-3">
+      <button class="btn btn-lg btn-outline-secondary" type="button" (click)="changeAvailability(availability.id, -1)">-</button>
+      <input type="text" class="form-control form-control-lg" placeholder="0" 
+        [(ngModel)]="availability.availableCount" readonly="readonly" />
+      <button class="btn btn-lg btn-outline-secondary" type="button" (click)="changeAvailability(availability.id, 1)">+</button>
+    </div>
+  </div>
+</div>
