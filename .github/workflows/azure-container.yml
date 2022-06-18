@@ -31,7 +31,7 @@ jobs:
       with:
         push: true
         tags: mova21.azurecr.io/mova21/velo-backend:${{ github.sha }}
-        file: ./src/Mova21AppBackend/Dockerfile
+        file: ./Dockerfile
 
   deploy:
     runs-on: ubuntu-latest
