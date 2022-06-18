@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.SpaServices.AngularCli;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Mova21AppBackend.Data.Interfaces;
 using Mova21AppBackend.Data.Storage;
 
@@ -16,11 +17,16 @@ public class Startup
 {
     private const string OpenIdConnectPolicyName = "OpenIDConnectPolicy";
 
-    public Startup(IWebHostEnvironment env, IConfiguration configuration)
+    public Startup(IWebHostEnvironment env, IConfiguration configuration, ILogger<Startup> logger)
     {
         Environment = env;
         Configuration = configuration;
-        Console.WriteLine("Jwt:MetadataAddress=" + Configuration["Jwt:MetadataAddress"]);
+
+        logger.LogWarning("Directus:Email=" + Configuration["Directus:Email"]);
+        logger.LogWarning("Directus:BaseUrl=" + Configuration["Directus:BaseUrl"]);
+        logger.LogWarning("Jwt:Authority=" + Configuration["Jwt:Authority"]);
+        logger.LogWarning("Jwt:Audience=" + Configuration["Jwt:Audience"]);
+        logger.LogWarning("Jwt:MetadataAddress=" + Configuration["Jwt:MetadataAddress"]);
     }
 
     public IConfiguration Configuration { get; }
