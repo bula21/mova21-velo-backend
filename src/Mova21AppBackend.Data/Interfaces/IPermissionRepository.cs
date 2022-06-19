@@ -4,5 +4,5 @@ namespace Mova21AppBackend.Data.Interfaces;
 
 public interface IPermissionRepository
 {
-    public Task<PermissionEntry> GetPermissionEntry();
+    public Task<PermissionEntry> GetPermissionEntryAsync();
 }

@@ -23,4 +23,6 @@ public class PermissionResponseData
     public string BikeEditors { get; set; }
     [JsonPropertyName("weather_editors")]
     public string WeatherEditors { get; set; }
+    [JsonPropertyName("activity_editors")]
+    public string ActivityEditors { get; set; }
 }

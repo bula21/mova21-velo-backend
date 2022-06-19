@@ -9,7 +9,11 @@ import { AppComponent } from "./app.component";
 import { NavMenuComponent } from "./nav-menu/nav-menu.component";
 import { HomeComponent } from "./home/home.component";
 import { BikeComponent } from "./bike/bike.component";
-import { WeatherComponent } from "./weather/weather.component";
+import { WeatherComponent } from "./weather/weather.component"
+import { ActivitiesComponent } from './activities/activities.component';
+import { UnauthorizedComponent } from './unauthorized/unauthorized.component';
+import { LocalStorageService } from "./infrastructure/localStorageService";
+import { AuthConfigModule } from './auth/auth-config.module';
 
 import { CalendarModule } from "primeng/calendar";
 import { SelectButtonModule } from "primeng/selectbutton";
@@ -17,9 +21,9 @@ import { ToastModule } from "primeng/toast";
 import { MessagesModule } from "primeng/messages";
 import { MessageModule } from "primeng/message";
 import { TooltipModule } from "primeng/tooltip";
-import { AuthConfigModule } from './auth/auth-config.module';
-import { UnauthorizedComponent } from './unauthorized/unauthorized.component';
+
 import { AutoLoginAllRoutesGuard } from 'angular-auth-oidc-client';
+import { AbstractSecurityStorage } from 'angular-auth-oidc-client';
 
 @NgModule({
   declarations: [
@@ -29,6 +33,7 @@ import { AutoLoginAllRoutesGuard } from 'angular-auth-oidc-client';
     BikeComponent,
     WeatherComponent,
     UnauthorizedComponent,
+    ActivitiesComponent,
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: "ng-cli-universal" }),
@@ -45,11 +50,12 @@ import { AutoLoginAllRoutesGuard } from 'angular-auth-oidc-client';
       { path: "", component: HomeComponent, pathMatch: "full" },
       { path: "bike", component: BikeComponent, canActivate: [AutoLoginAllRoutesGuard] },
       { path: "weather", component: WeatherComponent, canActivate: [AutoLoginAllRoutesGuard] },
+      { path: "activity", component: ActivitiesComponent, canActivate: [AutoLoginAllRoutesGuard] },
       { path: "unauthorized", component: UnauthorizedComponent }
     ]),
     AuthConfigModule
   ],
-  providers: [],
+  providers: [{ provide: AbstractSecurityStorage, useClass: LocalStorageService }],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

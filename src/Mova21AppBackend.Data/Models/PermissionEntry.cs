@@ -4,4 +4,5 @@ public class PermissionEntry
 {
     public List<string> BikeEditors { get; set; }
     public List<string> WeatherEditors { get; set; }
+    public List<string> ActivityEditors { get; set; }
 }

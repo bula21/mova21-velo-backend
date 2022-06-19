@@ -10,7 +10,7 @@ namespace Mova21AppBackend.Controllers
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class WeatherController
+    public class WeatherController : Controller
     {
         private readonly IWeatherRepository _weatherRepository;
 

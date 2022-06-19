@@ -13,16 +13,17 @@ public class DirectusPermissionRepository : BaseDirectusRepository, IPermissionR
     {
     }
 
-    public async Task<PermissionEntry> GetPermissionEntry()
+    public async Task<PermissionEntry> GetPermissionEntryAsync()
     {
         var request = new RestRequest(PermissionUrl);
         var response = await Client.ExecuteGetAsync<PermissionResponse>(request);
 
-        var permissionResponse = response.Data ?? throw new ArgumentNullException();
+        var permissionResponseData = response.Data?.Data;
         return new PermissionEntry
         {
-            BikeEditors = permissionResponse.Data.BikeEditors.Split(';', ',').ToList(),
-            WeatherEditors = permissionResponse.Data.WeatherEditors.Split(';', ',').ToList()
+            ActivityEditors = permissionResponseData?.ActivityEditors?.Split(';', ',').ToList() ?? new List<string>(),
+            BikeEditors = permissionResponseData?.BikeEditors?.Split(';', ',').ToList() ?? new List<string>(),
+            WeatherEditors = permissionResponseData?.WeatherEditors?.Split(';', ',').ToList() ?? new List<string>()
         };
     }
 }

@@ -1,4 +1,6 @@
 using System;
+using System.Linq;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -9,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Mova21AppBackend.Data.Interfaces;
+using Mova21AppBackend.Data.Models;
 using Mova21AppBackend.Data.Storage;
 
 namespace Mova21AppBackend;
@@ -51,12 +54,45 @@ public class Startup
                         return c.Response.WriteAsync(c.Exception.ToString());
                     }
                     return c.Response.WriteAsync("An error occurred processing your authentication.");
+                },
+                OnTokenValidated = async tokenValidationContext =>
+                {
+                    if (tokenValidationContext.Principal is null)
+                    {
+                        return;
+                    }
+
+                    var username = tokenValidationContext.Principal.Claims
+                        .FirstOrDefault(c => c.Type == "preferred_username")?.Value;
+                    if (username == null)
+                    {
+                        tokenValidationContext.Principal.AddIdentity(new ClaimsIdentity(new[]
+                        {
+                            new Claim(Claims.ActivityEdit, "false"),
+                            new Claim(Claims.BikeEdit, "false"),
+                            new Claim(Claims.WeatherEdit, "false")
+                        }));
+                    }
+                    else
+                    {
+                        var permissionRepo = tokenValidationContext.HttpContext.RequestServices.GetRequiredService<IPermissionRepository>();
+                        var permissionEntry = await permissionRepo.GetPermissionEntryAsync();
+
+                        tokenValidationContext.Principal.AddIdentity(new ClaimsIdentity(new[]
+                        {
+                            new Claim(Claims.ActivityEdit, permissionEntry.ActivityEditors.Contains(username, StringComparer.InvariantCultureIgnoreCase) ? "true" : "false"),
+                            new Claim(Claims.BikeEdit, permissionEntry.BikeEditors.Contains(username, StringComparer.InvariantCultureIgnoreCase) ? "true" : "false"),
+                            new Claim(Claims.WeatherEdit, permissionEntry.WeatherEditors.Contains(username, StringComparer.InvariantCultureIgnoreCase) ? "true" : "false")
+                        }));
+                    }
                 }
             };
         });
         
         services.AddSingleton<IBikeRepository, DirectusBikeRepository>();
         services.AddScoped<IWeatherRepository, DirectusWeatherRepository>();
+        services.AddScoped<IPermissionRepository, DirectusPermissionRepository>();
+        services.AddScoped<IActivityRepository, DirectusActivityRepository>();
 
         services.AddControllersWithViews();
         // In production, the Angular files will be served from this directory

@@ -9,7 +9,7 @@ namespace Mova21AppBackend.Controllers
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class BikeController
+    public class BikeController : Controller
     {
         private readonly IBikeRepository _bikeRepository;
 

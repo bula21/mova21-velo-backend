@@ -1,0 +1,9 @@
+<div class="container">
+  <div class="row">
+    <div class="col-sm-2">{{date | date}}</div>
+    <div class="col-sm-1">{{categoryStringMap.get(category)}}</div>
+    <div class="col-sm-5">
+      <p-selectButton [options]="activityCategories" [(ngModel)]="activity.category" (ngModelChange)="weatherEntryChanged(weatherEntry)"></p-selectButton>
+    </div>
+  </div>
+</div>
