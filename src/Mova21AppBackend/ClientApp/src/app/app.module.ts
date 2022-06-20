@@ -15,12 +15,17 @@ import { UnauthorizedComponent } from './unauthorized/unauthorized.component';
 import { LocalStorageService } from "./infrastructure/localStorageService";
 import { AuthConfigModule } from './auth/auth-config.module';
 
+import { ButtonModule } from 'primeng/button';
 import { CalendarModule } from "primeng/calendar";
-import { SelectButtonModule } from "primeng/selectbutton";
-import { ToastModule } from "primeng/toast";
-import { MessagesModule } from "primeng/messages";
+import { CheckboxModule } from 'primeng/checkbox';
+import { EditorModule } from 'primeng/editor';
+import { InputTextareaModule } from 'primeng/inputtextarea';
+import { InputTextModule } from 'primeng/inputtext';
 import { MessageModule } from "primeng/message";
+import { MessagesModule } from "primeng/messages";
+import { ToastModule } from "primeng/toast";
 import { TooltipModule } from "primeng/tooltip";
+import { SelectButtonModule } from "primeng/selectbutton";
 
 import { AutoLoginAllRoutesGuard } from 'angular-auth-oidc-client';
 import { AbstractSecurityStorage } from 'angular-auth-oidc-client';
@@ -35,17 +40,24 @@ import { AbstractSecurityStorage } from 'angular-auth-oidc-client';
     UnauthorizedComponent,
     ActivitiesComponent,
   ],
+  providers: [{ provide: AbstractSecurityStorage, useClass: LocalStorageService }],
+  bootstrap: [AppComponent],
   imports: [
     BrowserModule.withServerTransition({ appId: "ng-cli-universal" }),
     BrowserAnimationsModule,
     HttpClientModule,
     FormsModule,
+    ButtonModule,
     CalendarModule,
-    SelectButtonModule,
-    ToastModule,
-    MessagesModule,
+    CheckboxModule,
+    EditorModule,
+    InputTextModule,
+    InputTextareaModule,
     MessageModule,
+    MessagesModule,
+    ToastModule,
     TooltipModule,
+    SelectButtonModule,
     RouterModule.forRoot([
       { path: "", component: HomeComponent, pathMatch: "full" },
       { path: "bike", component: BikeComponent, canActivate: [AutoLoginAllRoutesGuard] },
@@ -54,8 +66,6 @@ import { AbstractSecurityStorage } from 'angular-auth-oidc-client';
       { path: "unauthorized", component: UnauthorizedComponent }
     ]),
     AuthConfigModule
-  ],
-  providers: [{ provide: AbstractSecurityStorage, useClass: LocalStorageService }],
-  bootstrap: [AppComponent]
+  ]
 })
 export class AppModule { }

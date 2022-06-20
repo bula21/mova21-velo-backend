@@ -1,9 +1,71 @@
 <div class="container">
-  <div class="row">
-    <div class="col-sm-2">{{date | date}}</div>
-    <div class="col-sm-1">{{categoryStringMap.get(category)}}</div>
-    <div class="col-sm-5">
-      <p-selectButton [options]="activityCategories" [(ngModel)]="activity.category" (ngModelChange)="weatherEntryChanged(weatherEntry)"></p-selectButton>
+  <div class="row mb-3">
+    <div class="col-12 mb-1">
+      <h1>Neue Aktivität einreichen</h1>
+    </div>
+  </div>
+  <div class="row mb-3">
+    <div class="col-sm-3">
+      <p-selectButton [options]="activityCategories" [(ngModel)]="activity.category" optionLabel="description"></p-selectButton>
+    </div>
+    <div class="col-sm-3">
+      <p-checkbox [(ngModel)]="activity.isPermanent" [binary]="true" label="Dauerhafte Aktivität (jeden Tag)"></p-checkbox>
+    </div>
+  </div>
+  <div class="row mb-3">
+    <div class="col-sm-4">
+      <input type="text" pInputText [(ngModel)]="activity.titleDe" style="width:100%" placeholder="Title DE"/>
+    </div>
+    <div class="col-sm-4">
+      <input type="text" pInputText [(ngModel)]="activity.titleFr" style="width:100%" placeholder="Title FR"/>
+    </div>
+    <div class="col-sm-4">
+      <input type="text" pInputText [(ngModel)]="activity.titleIt" style="width:100%" placeholder="Title IT"/>
+    </div>
+  </div>
+  <div class="row mb-3">
+    <div class="col-sm-4">
+      <input type="text" pInputText [(ngModel)]="activity.locationDe" style="width:100%" placeholder="Location DE"/>
+    </div>
+    <div class="col-sm-4">
+      <input type="text" pInputText [(ngModel)]="activity.locationFr" style="width:100%" placeholder="Location FR"/>
+    </div>
+    <div class="col-sm-4">
+      <input type="text" pInputText [(ngModel)]="activity.locationIt" style="width:100%" placeholder="Location IT"/>
+    </div>
+  </div>
+  <div class="row mb-3">
+    <div class="col-sm-4">
+      <textarea pInputTextarea [(ngModel)]="activity.openingHoursDe" style="width:100%" placeholder="Opening Hours DE" [rows]="3" [autoResize]="true"></textarea>
+    </div>
+    <div class="col-sm-4">
+      <textarea pInputTextarea [(ngModel)]="activity.openingHoursFr" style="width:100%" placeholder="Opening Hours FR" [rows]="3" [autoResize]="true"></textarea>
+    </div>
+    <div class="col-sm-4">
+      <textarea pInputTextarea [(ngModel)]="activity.openingHoursIt" style="width:100%" placeholder="Opening Hours IT" [rows]="3" [autoResize]="true"></textarea>
+    </div>
+  </div>
+  <div class="row mb-3">
+    <div class="col-sm-12">
+      <p-editor [(ngModel)]="activity.descriptionDe" placeholder="Beschreibung DE" [style]="{'height':'250px'}"></p-editor>
+    </div>
+  </div>
+  <div class="row mb-3">
+    <div class="col-sm-12">
+      <p-editor [(ngModel)]="activity.descriptionFr" placeholder="Beschreibung FR" [style]="{'height':'250px'}"></p-editor>
+    </div>
+  </div>
+  <div class="row mb-3">
+    <div class="col-sm-12">
+      <p-editor [(ngModel)]="activity.descriptionIt" placeholder="Beschreibung IT" [style]="{'height':'250px'}"></p-editor>
+    </div>
+  </div>
+  <div class="row mb-3">
+    <div class="col-sm-2">
+      <p-button label="Abbrechen" icon="pi pi-times" styleClass="p-button-danger" (onClick)="resetInput()"></p-button>
+    </div>
+    <div class="col-sm-2">
+      <p-button label="Einreichen" icon="pi pi-check" [disabled]="!canCreateActivity()" (onClick)="createActivity()"></p-button>
     </div>
   </div>
 </div>

@@ -51,7 +51,7 @@ export class ActivitiesComponent implements OnInit {
 
   createActivity():void {
     this.activityService.createActivity(this.activity)
-      .subscribe(_ => this.creationStatus = CreationStatus.Successful);
+      .subscribe(() => this.creationStatus = CreationStatus.Successful);
   }
 
   isNullOrWhiteSpace(text: string) {
