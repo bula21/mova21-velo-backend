@@ -16,7 +16,7 @@ export class ActivitiesComponent implements OnInit {
   creationStatus = CreationStatus.DataEnter;
   activityCategories: any[];
 
-  activity = new Activity();
+  activity: Activity = Object.assign(new Activity(), { catgory: ActivityCategory.Rover, isPermanent: false });
   
   constructor(private activityService: ActivityService) {
     this.activityCategories = [

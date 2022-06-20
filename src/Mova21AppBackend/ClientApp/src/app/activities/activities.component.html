@@ -5,11 +5,8 @@
     </div>
   </div>
   <div class="row mb-3">
-    <div class="col-sm-3">
-      <p-selectButton [options]="activityCategories" [(ngModel)]="activity.category" optionLabel="description"></p-selectButton>
-    </div>
-    <div class="col-sm-3">
-      <p-checkbox [(ngModel)]="activity.isPermanent" [binary]="true" label="Dauerhafte Aktivität (jeden Tag)"></p-checkbox>
+    <div class="col-sm-6">
+      <p-calendar [(ngModel)]="activity.dateTime" [inline]="true" [showWeek]="true"></p-calendar>
     </div>
   </div>
   <div class="row mb-3">
