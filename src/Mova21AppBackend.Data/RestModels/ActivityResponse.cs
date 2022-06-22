@@ -1,5 +1,6 @@
 ﻿
 using System.Text.Json.Serialization;
+using Mova21AppBackend.Data.Models;
 
 public class ActivityResponse
 {
@@ -53,4 +54,33 @@ public class ActivityData
     public string Category { get; set; }
     [JsonPropertyName("date")]
     public DateTime? Date { get; set; }
+
+    public ActivityEntry ToActivityEntry()
+    {
+        return new ActivityEntry
+        {
+            Id = Id,
+            IsPermanent = IsPermanent,
+            TitleDe = TitleDe,
+            TitleFr = TitleFr,
+            TitleIt = TitleIt,
+            LocationDe = LocationDe,
+            LocationFr = LocationFr,
+            LocationIt = LocationIt,
+            DescriptionDe = DescriptionDe,
+            DescriptionFr = DescriptionFr,
+            DescriptionIt = DescriptionIt,
+            OpeningHoursDe = OpeningHoursDe,
+            OpeningHoursFr = OpeningHoursFr,
+            OpeningHoursIt = OpeningHoursIt,
+            Category = Category switch
+            {
+                "rover" => ActivityCategory.Rover,
+                "all" => ActivityCategory.Both,
+                "walk-in" => ActivityCategory.WalkIn,
+                _ => ActivityCategory.Unknown
+            },
+            Date = Date
+        };
+    }
 }

@@ -1,4 +1,4 @@
-<div class="container">
+<div class="container" *ngIf="currentCreationStatus == creationStatus.DataEnter">
   <div class="row mb-3">
     <div class="col-12 mb-1">
       <h1>Neue Aktivität einreichen</h1>
@@ -6,29 +6,35 @@
   </div>
   <div class="row mb-3">
     <div class="col-sm-6">
-      <p-calendar [(ngModel)]="activity.dateTime" [inline]="true" [showWeek]="true"></p-calendar>
+      <p-calendar [(ngModel)]="activity.date"
+                  [inline]="true"
+                  [selectOtherMonths]="true"
+                  [firstDayOfWeek]="1"
+                  [minDate]="minDateValue"
+                  [maxDate]="maxDateValue"
+                  [showIcon]="true"></p-calendar>
     </div>
   </div>
   <div class="row mb-3">
     <div class="col-sm-4">
-      <input type="text" pInputText [(ngModel)]="activity.titleDe" style="width:100%" placeholder="Title DE"/>
+      <input type="text" pInputText [(ngModel)]="activity.titleDe" style="width:100%" placeholder="Title DE" />
     </div>
     <div class="col-sm-4">
-      <input type="text" pInputText [(ngModel)]="activity.titleFr" style="width:100%" placeholder="Title FR"/>
+      <input type="text" pInputText [(ngModel)]="activity.titleFr" style="width:100%" placeholder="Title FR" />
     </div>
     <div class="col-sm-4">
-      <input type="text" pInputText [(ngModel)]="activity.titleIt" style="width:100%" placeholder="Title IT"/>
+      <input type="text" pInputText [(ngModel)]="activity.titleIt" style="width:100%" placeholder="Title IT" />
     </div>
   </div>
   <div class="row mb-3">
     <div class="col-sm-4">
-      <input type="text" pInputText [(ngModel)]="activity.locationDe" style="width:100%" placeholder="Location DE"/>
+      <input type="text" pInputText [(ngModel)]="activity.locationDe" style="width:100%" placeholder="Location DE" />
     </div>
     <div class="col-sm-4">
-      <input type="text" pInputText [(ngModel)]="activity.locationFr" style="width:100%" placeholder="Location FR"/>
+      <input type="text" pInputText [(ngModel)]="activity.locationFr" style="width:100%" placeholder="Location FR" />
     </div>
     <div class="col-sm-4">
-      <input type="text" pInputText [(ngModel)]="activity.locationIt" style="width:100%" placeholder="Location IT"/>
+      <input type="text" pInputText [(ngModel)]="activity.locationIt" style="width:100%" placeholder="Location IT" />
     </div>
   </div>
   <div class="row mb-3">
@@ -44,17 +50,38 @@
   </div>
   <div class="row mb-3">
     <div class="col-sm-12">
-      <p-editor [(ngModel)]="activity.descriptionDe" placeholder="Beschreibung DE" [style]="{'height':'250px'}"></p-editor>
+      <h5>Beschreibung DE</h5>
+      <md-editor name="Content"
+                 [(ngModel)]="activity.descriptionDe"
+                 [height]="'250px'"
+                 [options]="{ enablePreviewContentClick: true }"
+                 required
+                 maxlength="500">
+      </md-editor>
     </div>
   </div>
   <div class="row mb-3">
     <div class="col-sm-12">
-      <p-editor [(ngModel)]="activity.descriptionFr" placeholder="Beschreibung FR" [style]="{'height':'250px'}"></p-editor>
+      <h5>Beschreibung FR</h5>
+      <md-editor name="Content"
+                 [(ngModel)]="activity.descriptionFr"
+                 [height]="'250px'"
+                 [options]="{ enablePreviewContentClick: true }"
+                 required
+                 maxlength="500">
+      </md-editor>
     </div>
   </div>
   <div class="row mb-3">
     <div class="col-sm-12">
-      <p-editor [(ngModel)]="activity.descriptionIt" placeholder="Beschreibung IT" [style]="{'height':'250px'}"></p-editor>
+      <h5>Beschreibung IT</h5>
+      <md-editor name="Content"
+                 [(ngModel)]="activity.descriptionIt"
+                 [height]="'250px'"
+                 [options]="{ enablePreviewContentClick: true }"
+                 required
+                 maxlength="500">
+      </md-editor>
     </div>
   </div>
   <div class="row mb-3">
@@ -63,6 +90,31 @@
     </div>
     <div class="col-sm-2">
       <p-button label="Einreichen" icon="pi pi-check" [disabled]="!canCreateActivity()" (onClick)="createActivity()"></p-button>
+    </div>
+  </div>
+</div>
+<div class="container" *ngIf="currentCreationStatus == creationStatus.Successful">
+  <div class="row mb-3">
+    <div class="col-sm-12">
+      <h1>Aktivität '{{activity.titleDe}}' erfolgreich erfasst!</h1>
+      <p>Das App- und Editorialteam werden sich deine Eingabe ansehen und schnellstmöglich freischalten.</p>
+    </div>
+  </div>
+  <div class="row mb-3">
+    <div class="col-sm-12">
+      <p-button label="Neue aktivität erfassen" icon="pi pi-plus" (onClick)="resetInput()"></p-button>
+    </div>
+  </div>
+</div>
+<div class="container" *ngIf="currentCreationStatus == creationStatus.Error">
+  <div class="row mb-3">
+    <div class="col-sm-12">
+      <h1>Fehler beim erfassen!</h1>
+      <p>Sorry da scheint etwas schief gelaufen zu sein.</p>
+      <p>Bitte versuche es nochmals und melde dich sonst beim IT-Support.</p>
+      <p-button label="Nochmal versuchen" icon="pi pi-arrow-left" (onClick)="setDataEnterMode()"></p-button>
+      <p class="mt-3">Technisches blabla --> schicks der IT 😉</p>
+      <p>{{creationError | json}}</p>
     </div>
   </div>
 </div>

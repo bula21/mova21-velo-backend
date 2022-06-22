@@ -30,6 +30,8 @@ import { SelectButtonModule } from "primeng/selectbutton";
 import { AutoLoginAllRoutesGuard } from 'angular-auth-oidc-client';
 import { AbstractSecurityStorage } from 'angular-auth-oidc-client';
 
+import { LMarkdownEditorModule } from 'ngx-markdown-editor';
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -53,6 +55,7 @@ import { AbstractSecurityStorage } from 'angular-auth-oidc-client';
     EditorModule,
     InputTextModule,
     InputTextareaModule,
+    LMarkdownEditorModule,
     MessageModule,
     MessagesModule,
     ToastModule,

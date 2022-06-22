@@ -6,7 +6,7 @@ using Mova21AppBackend.Data.Storage;
 
 namespace Mova21AppBackend.Controllers
 {
-    [Authorize]
+    [Authorize(PolicyNames.Bike)]
     [ApiController]
     [Route("api/[controller]")]
     public class BikeController : Controller

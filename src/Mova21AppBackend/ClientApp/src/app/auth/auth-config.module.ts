@@ -13,7 +13,6 @@ import { AuthModule, LogLevel } from 'angular-auth-oidc-client';
       scope: 'openid profile email',
       responseType: 'id_token token',
       silentRenewUrl: `${window.location.origin}/silent-renew.html`,
-      startCheckSession: true,
       silentRenew: true,
       authWellknownEndpointUrl: "https://auth.bula21.ch/auth/realms/master/.well-known/openid-configuration",
       logLevel: LogLevel.Warn,

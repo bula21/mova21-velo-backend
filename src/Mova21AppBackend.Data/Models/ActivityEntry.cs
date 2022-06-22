@@ -18,13 +18,14 @@ public class ActivityEntry
     public string OpeningHoursDe { get; set; }
     public string OpeningHoursFr { get; set; }
     public string OpeningHoursIt { get; set; }
-    public string Category { get; set; }
+    public ActivityCategory Category { get; set; }
     public DateTime? Date { get; set; }
 }
 
 public enum ActivityCategory
 {
-    WalkIn,
     Rover,
-    WalkInAndRover
+    WalkIn,
+    Both,
+    Unknown
 }

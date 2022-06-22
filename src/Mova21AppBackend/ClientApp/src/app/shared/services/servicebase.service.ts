@@ -10,7 +10,6 @@ export class ServiceBase {
   token = "";
   constructor(public oidcSecurityService: OidcSecurityService) {
     oidcSecurityService.getAccessToken().subscribe((token) => {
-      console.warn("got a token in service :D ")
       this.token = token;
     });
   }

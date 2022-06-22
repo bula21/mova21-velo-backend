@@ -7,7 +7,7 @@ using Mova21AppBackend.Data.Models;
 
 namespace Mova21AppBackend.Controllers
 {
-    [Authorize]
+    [Authorize(PolicyNames.Weather)]
     [ApiController]
     [Route("api/[controller]")]
     public class WeatherController : Controller

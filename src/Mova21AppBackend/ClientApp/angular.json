@@ -21,7 +21,12 @@
             "tsConfig": "src/tsconfig.app.json",
             "assets": [
               "src/assets",
-              "src/silent-renew.html"
+              "src/silent-renew.html",
+              {
+                "glob": "**/*",
+                "input": "node_modules/ace-builds/src-min",
+                "output": "./assets/ace-builds/"
+              }
             ],
             "styles": [
               "node_modules/bootstrap/dist/css/bootstrap.min.css",
@@ -30,10 +35,14 @@
               "node_modules/primeicons/primeicons.css",
               "node_modules/quill/dist/quill.core.css",
               "node_modules/quill/dist/quill.snow.css",
+              "node_modules/font-awesome/css/font-awesome.min.css",
+              "node_modules/ngx-markdown-editor/assets/highlight.js/agate.min.css",              
               "src/styles.css"
             ],
             "scripts": [
-              "node_modules/quill/dist/quill.js"
+              "node_modules/quill/dist/quill.js",
+              "node_modules/ngx-markdown-editor/assets/highlight.js/highlight.min.js",
+              "node_modules/ngx-markdown-editor/assets/marked.min.js"
             ]
           },
           "configurations": {

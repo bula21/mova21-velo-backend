@@ -15,6 +15,6 @@ export class Activity {
   openingHoursDe = "";
   openingHoursFr = "";
   openingHoursIt = "";
-  category = ActivityCategory.Both;
-  dateTime = new Date();
+  category = ActivityCategory.Rover;
+  date = new Date();
 }

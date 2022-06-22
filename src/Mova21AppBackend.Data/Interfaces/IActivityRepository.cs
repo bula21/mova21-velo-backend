@@ -4,5 +4,5 @@ namespace Mova21AppBackend.Data.Interfaces;
 
 public interface IActivityRepository
 {
-    Task<WeatherEntry> CreateActivityEntry(ActivityEntry model);
+    Task<ActivityEntry> CreateActivityEntry(ActivityEntry model);
 }

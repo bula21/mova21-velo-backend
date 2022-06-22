@@ -1,6 +1,9 @@
 using System;
 using System.Linq;
 using System.Security.Claims;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -62,9 +65,9 @@ public class Startup
                         return;
                     }
 
-                    var username = tokenValidationContext.Principal.Claims
-                        .FirstOrDefault(c => c.Type == "preferred_username")?.Value;
-                    if (username == null)
+                    var resourceAccessJson = tokenValidationContext.Principal.Claims
+                        .FirstOrDefault(c => c.Type == "resource_access")?.Value;
+                    if (resourceAccessJson == null)
                     {
                         tokenValidationContext.Principal.AddIdentity(new ClaimsIdentity(new[]
                         {
@@ -75,23 +78,29 @@ public class Startup
                     }
                     else
                     {
-                        var permissionRepo = tokenValidationContext.HttpContext.RequestServices.GetRequiredService<IPermissionRepository>();
-                        var permissionEntry = await permissionRepo.GetPermissionEntryAsync();
-
+                        JsonObject obj = JsonNode.Parse(resourceAccessJson) as JsonObject;
+                        
+                        var roles = obj["velo-backend"]["roles"].AsArray().Select(x => x.AsValue().GetValue<string>());
                         tokenValidationContext.Principal.AddIdentity(new ClaimsIdentity(new[]
                         {
-                            new Claim(Claims.ActivityEdit, permissionEntry.ActivityEditors.Contains(username, StringComparer.InvariantCultureIgnoreCase) ? "true" : "false"),
-                            new Claim(Claims.BikeEdit, permissionEntry.BikeEditors.Contains(username, StringComparer.InvariantCultureIgnoreCase) ? "true" : "false"),
-                            new Claim(Claims.WeatherEdit, permissionEntry.WeatherEditors.Contains(username, StringComparer.InvariantCultureIgnoreCase) ? "true" : "false")
+                            new Claim(Claims.ActivityEdit, roles.Contains("activity", StringComparer.InvariantCultureIgnoreCase) ? "true" : "false"),
+                            new Claim(Claims.BikeEdit, roles.Contains("velo", StringComparer.InvariantCultureIgnoreCase) ? "true" : "false"),
+                            new Claim(Claims.WeatherEdit, roles.Contains("wetter", StringComparer.InvariantCultureIgnoreCase) ? "true" : "false")
                         }));
                     }
                 }
             };
         });
-        
-        services.AddSingleton<IBikeRepository, DirectusBikeRepository>();
+
+        services.AddAuthorization(options =>
+        {
+            options.AddPolicy(PolicyNames.Activity,policy => policy.RequireClaim(Claims.ActivityEdit, "true"));
+            options.AddPolicy(PolicyNames.Bike,policy => policy.RequireClaim(Claims.BikeEdit, "true"));
+            options.AddPolicy(PolicyNames.Weather,policy => policy.RequireClaim(Claims.WeatherEdit, "true"));
+        });        
+
+        services.AddScoped<IBikeRepository, DirectusBikeRepository>();
         services.AddScoped<IWeatherRepository, DirectusWeatherRepository>();
-        services.AddScoped<IPermissionRepository, DirectusPermissionRepository>();
         services.AddScoped<IActivityRepository, DirectusActivityRepository>();
 
         services.AddControllersWithViews();

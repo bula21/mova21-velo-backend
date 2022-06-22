@@ -13,11 +13,15 @@ import { Activity } from "../shared/models/activity";
   styleUrls: ['./activities.component.css']
 })
 export class ActivitiesComponent implements OnInit {
-  creationStatus = CreationStatus.DataEnter;
+  currentCreationStatus = CreationStatus.DataEnter;
   activityCategories: any[];
+  creationStatus = CreationStatus;
+  minDateValue = new Date("2022-07-01");
+  maxDateValue = new Date("2022-08-31");
+  creationError: any;
 
   activity: Activity = Object.assign(new Activity(), { catgory: ActivityCategory.Rover, isPermanent: false });
-  
+
   constructor(private activityService: ActivityService) {
     this.activityCategories = [
       { value: ActivityCategory.Both, description: "Beide" },
@@ -31,9 +35,14 @@ export class ActivitiesComponent implements OnInit {
 
   resetInput(): void {
     this.activity = new Activity();
-    this.creationStatus = CreationStatus.DataEnter;
+    this.creationError = null;
+    this.setDataEnterMode();
   }
-  
+
+  setDataEnterMode(): void {
+    this.currentCreationStatus = CreationStatus.DataEnter;
+  }
+
   canCreateActivity(): boolean {
     return !this.isNullOrWhiteSpace(this.activity.descriptionDe) &&
       !this.isNullOrWhiteSpace(this.activity.descriptionFr) &&
@@ -49,12 +58,16 @@ export class ActivitiesComponent implements OnInit {
       !this.isNullOrWhiteSpace(this.activity.openingHoursIt);
   }
 
-  createActivity():void {
+  createActivity(): void {
     this.activityService.createActivity(this.activity)
-      .subscribe(() => this.creationStatus = CreationStatus.Successful);
+      .subscribe(() => this.currentCreationStatus = CreationStatus.Successful,
+        error => {
+          this.currentCreationStatus = CreationStatus.Error;
+          this.creationError = error;
+        });
   }
 
   isNullOrWhiteSpace(text: string) {
-    return text && text.trim().length > 0;
+    return !(text !== undefined && text !== null && text.trim().length > 0);
   }
 }

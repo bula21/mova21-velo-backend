@@ -1,11 +1,21 @@
 <div class="container">
   <div class="row">
     <div class="col-4">
-      <p-calendar [(ngModel)]="startDateRange" (ngModelChange)="refreshEntries()" dateFormat="dd.mm.yy" [selectOtherMonths]="true" [showIcon]="true"></p-calendar>
+      <p-calendar [(ngModel)]="startDateRange"
+                  (ngModelChange)="refreshEntries()"
+                  dateFormat="dd.mm.yy"
+                  [selectOtherMonths]="true"
+                  [firstDayOfWeek]="1"
+                  [showIcon]="true"></p-calendar>
     </div>
     <div class="col-1">-</div>
     <div class="col-4">
-      <p-calendar [(ngModel)]="endDateRange" (ngModelChange)="refreshEntries()" dateFormat="dd.mm.yy" [selectOtherMonths]="true" [showIcon]="true"></p-calendar>
+      <p-calendar [(ngModel)]="endDateRange"
+                  (ngModelChange)="refreshEntries()"
+                  dateFormat="dd.mm.yy"
+                  [selectOtherMonths]="true"
+                  [firstDayOfWeek]="1"
+                  [showIcon]="true"></p-calendar>
     </div>
   </div>
   <div class="row" *ngFor="let weatherEntry of weatherEntries">
