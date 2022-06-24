@@ -23,13 +23,13 @@
             <a class="nav-link text-dark" [routerLink]="['/']">Home</a>
           </li>
           <li class="nav-item" [routerLinkActive]="['link-active']">
-            <a class="nav-link text-dark" *ngIf="availablePermissions.canEditBike" [routerLink]="['/bike']">Bike</a>
+            <a class="nav-link text-dark" *ngIf="availablePermissions.canEditBike" [routerLink]="['/bike']">Velo</a>
           </li>
           <li class="nav-item" [routerLinkActive]="['link-active']">
-            <a class="nav-link text-dark" *ngIf="availablePermissions.canEditWeather" [routerLink]="['/weather']">Weather</a>
+            <a class="nav-link text-dark" *ngIf="availablePermissions.canEditWeather" [routerLink]="['/weather']">Wetter</a>
           </li>
           <li class="nav-item" [routerLinkActive]="['link-active']">
-            <a class="nav-link text-dark" *ngIf="availablePermissions.canEditActivities" [routerLink]="['/activity']">Activities</a>
+            <a class="nav-link text-dark" *ngIf="availablePermissions.canEditActivities" [routerLink]="['/activity']">Aktivitäten</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" *ngIf="isAuthenticated" (click)="logout()">Logout</a>
