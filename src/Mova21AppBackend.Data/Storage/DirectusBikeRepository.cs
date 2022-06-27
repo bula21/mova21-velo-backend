@@ -7,44 +7,45 @@ namespace Mova21AppBackend.Data.Storage;
 
 public class DirectusBikeRepository : BaseDirectusRepository, IBikeRepository
 {
-    const string BikeUrl = "items/bike";
+    const string BikeUrl = "items/Bike";
 
     public DirectusBikeRepository(IConfiguration configuration) : base(configuration)
     {
     }
 
-    public async Task<BikeAvailabilities> GetBikeAvailabilitiesAsync()
+    public async Task<BikeAvailability> GetBikeAvailabilityAsync()
     {
         var request = new RestRequest(BikeUrl);
-        var response = await Client.ExecuteGetAsync<BikesResponse>(request);
-        return new BikeAvailabilities
+        var response = await Client.ExecuteGetAsync<BikeResponse>(request);
+        return new BikeAvailability
         {
-            Availabilities = response.Data?.Data?.Select(x => new BikeAvailability
-            {
-                AvailableCount = x.AvailableCount,
-                Id = x.Id,
-                Type = x.Type ?? ""
-            })
-
+            BikeTrailers = response.Data?.Data?.BikeTrailers ?? 0,
+            CargoBikes = response.Data?.Data?.CargoBikes ?? 0,
+            RegularBikes = response.Data?.Data?.RegularBikes ?? 0,
+            Id = response.Data?.Data?.Id ?? 0,
+            IsOpen = response.Data?.Data?.IsOpen ?? false,
         };
     }
 
-    public async Task<BikeAvailability> ChangeBikeAvailabilityAsync(ChangeBikeAvailabilityCountModel model)
+    public async Task<BikeAvailability> UpdateBikeAvailabilityAsync(BikeAvailability model)
     {
-        var getRequest = new RestRequest($"{BikeUrl}/{model.Id}", Method.Get);
-        var getResponse = await Client.ExecuteAsync<BikeResponse>(getRequest);
-
-        var patchRequest = new RestRequest($"{BikeUrl}/{model.Id}", Method.Patch)
-            .AddJsonBody(new
+        var patchRequest = new RestRequest(BikeUrl, Method.Patch)
+            .AddJsonBody(new BikeResponseData
             {
-                availablecount = (getResponse.Data?.Data?.AvailableCount ?? 0) + model.AmountChange
+                Id = model.Id,
+                IsOpen = model.IsOpen,
+                RegularBikes = model.RegularBikes,
+                CargoBikes = model.CargoBikes,
+                BikeTrailers = model.BikeTrailers
             });
         var patchResponse = await Client.ExecuteAsync<BikeResponse>(patchRequest);
         return new BikeAvailability
         {
-            AvailableCount = patchResponse.Data?.Data?.AvailableCount ?? 0,
+            BikeTrailers = patchResponse.Data?.Data?.BikeTrailers ?? 0,
+            CargoBikes = patchResponse.Data?.Data?.CargoBikes ?? 0,
+            RegularBikes = patchResponse.Data?.Data?.RegularBikes ?? 0,
             Id = patchResponse.Data?.Data?.Id ?? 0,
-            Type = patchResponse.Data?.Data?.Type ?? ""
+            IsOpen = patchResponse.Data?.Data?.IsOpen ?? false,
         };
     }
 }

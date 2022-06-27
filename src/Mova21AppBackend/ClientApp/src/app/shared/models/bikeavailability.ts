@@ -1,5 +1,7 @@
 export class BikeAvailability {
   id = 0;
-  availableCount = 0;
-  type = "";
+  isOpen = false;
+  regularBikes = 0;
+  cargoBikes = 0;
+  bikeTrailers = 0;
 }

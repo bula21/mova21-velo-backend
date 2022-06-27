@@ -1,17 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
+﻿using System.Text.Json.Serialization;
 
 namespace Mova21AppBackend.Data.RestModels;
-
-public class BikesResponse
-{
-    [JsonPropertyName("data")]
-    public IEnumerable<BikeResponseData>? Data { get; set; }
-}
 
 public class BikeResponse
 {
@@ -24,21 +13,15 @@ public class BikeResponseData
     [JsonPropertyName("id")]
     public int Id { get; set; }
 
-    [JsonPropertyName("status")]
-    public string? Status { get; set; }
+    [JsonPropertyName("is_open")]
+    public bool IsOpen { get; set; }
 
-    [JsonPropertyName("owner")]
-    public int Owner { get; set; }
+    [JsonPropertyName("regular_bikes")]
+    public int RegularBikes { get; set; }
 
-    [JsonPropertyName("created_on")]
-    public DateTime CreatedOn { get; set; }
+    [JsonPropertyName("cargo_bikes")]
+    public int CargoBikes { get; set; }
 
-    [JsonPropertyName("modified_on")]
-    public DateTime ModifiedOn { get; set; }
-
-    [JsonPropertyName("type")]
-    public string? Type { get; set; }
-
-    [JsonPropertyName("availablecount")]
-    public int AvailableCount { get; set; }
+    [JsonPropertyName("bike_trailers")]
+    public int BikeTrailers { get; set; }
 }

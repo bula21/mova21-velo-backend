@@ -9,7 +9,7 @@ namespace Mova21AppBackend.Data.Storage
 {
     public interface IBikeRepository
     {
-        Task<BikeAvailabilities> GetBikeAvailabilitiesAsync();
-        Task<BikeAvailability> ChangeBikeAvailabilityAsync(ChangeBikeAvailabilityCountModel model);
+        Task<BikeAvailability> GetBikeAvailabilityAsync();
+        Task<BikeAvailability> UpdateBikeAvailabilityAsync(BikeAvailability model);
     }
 }

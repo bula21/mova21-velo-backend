@@ -19,6 +19,7 @@ import { ButtonModule } from 'primeng/button';
 import { CalendarModule } from "primeng/calendar";
 import { CheckboxModule } from 'primeng/checkbox';
 import { EditorModule } from 'primeng/editor';
+import { InputSwitchModule } from 'primeng/inputswitch';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { InputTextModule } from 'primeng/inputtext';
 import { MessageModule } from "primeng/message";
@@ -53,6 +54,7 @@ import { LMarkdownEditorModule } from 'ngx-markdown-editor';
     CalendarModule,
     CheckboxModule,
     EditorModule,
+    InputSwitchModule,
     InputTextModule,
     InputTextareaModule,
     LMarkdownEditorModule,

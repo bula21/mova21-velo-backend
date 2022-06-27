@@ -1,6 +1,6 @@
 import { Component, OnInit } from "@angular/core";
 import { BikeService } from "../shared/services/bike.service";
-import { BikeAvailabilities } from "../shared/models/bikeavailabilities";
+import { BikeAvailability } from "../shared/models/bikeavailability";
 
 @Component({
   selector: "app-bike",
@@ -8,17 +8,32 @@ import { BikeAvailabilities } from "../shared/models/bikeavailabilities";
   styleUrls: ["./bike.component.css"]
 })
 export class BikeComponent implements OnInit {
-  availabilities: BikeAvailabilities= <BikeAvailabilities>{ availabilities: [] };
+  availability: BikeAvailability = new BikeAvailability;
 
   constructor(private bikeService: BikeService) { }
 
   ngOnInit(): void {
-    this.bikeService.getAvailabilities().subscribe(availabilities => {
-      this.availabilities = availabilities;
+    this.bikeService.getAvailability().subscribe(availability => {
+      this.availability = availability;
     });
   }
 
-  changeAvailability(id: number, change: number) {
-    this.bikeService.changeCount({ id: id, amountChange: change}).subscribe(newAvailabilities => this.availabilities = newAvailabilities);
+  updateRegularBike(delta: number): void {
+    this.availability.regularBikes += delta;
+    this.update();
+  }
+
+  updateCargoBike(delta: number): void {
+    this.availability.cargoBikes += delta;
+    this.update();
+  }
+
+  updateBikeTrailes(delta: number): void {
+    this.availability.bikeTrailers += delta;
+    this.update();
+  }
+
+  update() {
+    this.bikeService.update(this.availability).subscribe(newAvailability => this.availability = newAvailability);
   }
 }
