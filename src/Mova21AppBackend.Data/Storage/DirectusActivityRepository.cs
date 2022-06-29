@@ -25,7 +25,7 @@ public class DirectusActivityRepository : BaseDirectusRepository, IActivityRepos
                     ActivityCategory.WalkIn => "walk-in",
                     _ => throw new NotSupportedException()
                 },
-                date = model.Date.Value.ToString("O"),
+                date = model.Date.Value.ToString("yyyy-MM-dd"),
                 description_de = model.DescriptionDe,
                 description_fr = model.DescriptionFr,
                 description_it = model.DescriptionIt,
@@ -40,8 +40,6 @@ public class DirectusActivityRepository : BaseDirectusRepository, IActivityRepos
                 title_it = model.TitleIt,
                 is_permanent = model.IsPermanent,
             });
-
-        var y = Client.ExecuteAsync<ActivityData>(createRequest).Result;
 
         var createResponse = await Client.ExecuteAsync<ActivityData>(createRequest);
         if (createResponse.IsSuccessful)
