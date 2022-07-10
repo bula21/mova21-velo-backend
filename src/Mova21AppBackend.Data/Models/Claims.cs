@@ -5,4 +5,5 @@ public class Claims
     public const string WeatherEdit = nameof(WeatherEdit);
     public const string BikeEdit = nameof(BikeEdit);
     public const string ActivityEdit = nameof(ActivityEdit);
+    public const string SendMails = nameof(SendMails);
 }

@@ -1,9 +1,8 @@
 using System;
 using System.Linq;
+using System.Net.Http;
 using System.Security.Claims;
-using System.Text.Json;
 using System.Text.Json.Nodes;
-using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -12,7 +11,8 @@ using Microsoft.AspNetCore.SpaServices.AngularCli;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.JsonWebTokens;
+using Microsoft.IdentityModel.Tokens;
 using Mova21AppBackend.Data.Interfaces;
 using Mova21AppBackend.Data.Models;
 using Mova21AppBackend.Data.Storage;
@@ -39,69 +39,92 @@ public class Startup
         {
             options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
             options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-        }).AddJwtBearer(o =>
-        {
-            o.Authority = Configuration["Jwt:Authority"];
-            o.TokenValidationParameters.ValidateAudience = false;
-            o.MetadataAddress = Configuration["Jwt:MetadataAddress"];
-            o.Events = new JwtBearerEvents
+        })
+            .AddJwtBearer(o =>
             {
-                OnAuthenticationFailed = c =>
+                o.Authority = Configuration["Jwt:Authority"];
+                o.TokenValidationParameters.ValidateAudience = false;
+                o.MetadataAddress = Configuration["Jwt:MetadataAddress"];
+                o.Events = new JwtBearerEvents
                 {
-                    c.NoResult();
-
-                    c.Response.StatusCode = 500;
-                    c.Response.ContentType = "text/plain";
-                    if (Environment.IsDevelopment())
+                    OnAuthenticationFailed = c =>
                     {
-                        return c.Response.WriteAsync(c.Exception.ToString());
+                        c.NoResult();
+
+                        c.Response.StatusCode = 500;
+                        c.Response.ContentType = "text/plain";
+                        if (Environment.IsDevelopment())
+                        {
+                            return c.Response.WriteAsync(c.Exception.ToString());
+                        }
+                        return c.Response.WriteAsync("An error occurred processing your authentication.");
+                    },
+                    OnTokenValidated = async tokenValidationContext =>
+                    {
+                        if (tokenValidationContext.Principal is null)
+                        {
+                            return;
+                        }
+
+                        var resourceAccessJson = tokenValidationContext.Principal.Claims
+                            .FirstOrDefault(c => c.Type == "resource_access")?.Value;
+                        if (resourceAccessJson == null)
+                        {
+                            tokenValidationContext.Principal.AddIdentity(new ClaimsIdentity(new[]
+                            {
+                                new Claim(Claims.ActivityEdit, "false"),
+                                new Claim(Claims.BikeEdit, "false"),
+                                new Claim(Claims.WeatherEdit, "false")
+                            }));
+                        }
+                        else
+                        {
+                            JsonObject obj = JsonNode.Parse(resourceAccessJson) as JsonObject;
+
+                            var roles = obj["velo-backend"]["roles"].AsArray().Select(x => x.AsValue().GetValue<string>());
+                            tokenValidationContext.Principal.AddIdentity(new ClaimsIdentity(new[]
+                            {
+                                new Claim(Claims.ActivityEdit, roles.Contains("activity", StringComparer.InvariantCultureIgnoreCase) ? "true" : "false"),
+                                new Claim(Claims.BikeEdit, roles.Contains("velo", StringComparer.InvariantCultureIgnoreCase) ? "true" : "false"),
+                                new Claim(Claims.WeatherEdit, roles.Contains("wetter", StringComparer.InvariantCultureIgnoreCase) ? "true" : "false")
+                            }));
+                        }
                     }
-                    return c.Response.WriteAsync("An error occurred processing your authentication.");
-                },
-                OnTokenValidated = async tokenValidationContext =>
+                };
+            })
+            .AddJwtBearer("LogDbJwtAuthenticationScheme", o =>
+            {
+                o.SecurityTokenValidators.Clear();
+                o.SecurityTokenValidators.Add(new LogDbJwtSecurityTokenValidator(Configuration));
+                o.Events = new JwtBearerEvents
                 {
-                    if (tokenValidationContext.Principal is null)
+                    OnTokenValidated = async tokenValidationContext =>
                     {
-                        return;
-                    }
+                        if (tokenValidationContext.Principal is null)
+                        {
+                            return;
+                        }
 
-                    var resourceAccessJson = tokenValidationContext.Principal.Claims
-                        .FirstOrDefault(c => c.Type == "resource_access")?.Value;
-                    if (resourceAccessJson == null)
-                    {
-                        tokenValidationContext.Principal.AddIdentity(new ClaimsIdentity(new[]
-                        {
-                            new Claim(Claims.ActivityEdit, "false"),
-                            new Claim(Claims.BikeEdit, "false"),
-                            new Claim(Claims.WeatherEdit, "false")
-                        }));
+                        tokenValidationContext.Principal.AddIdentity(new ClaimsIdentity(new[] { new Claim(Claims.SendMails, "true") }));
                     }
-                    else
-                    {
-                        JsonObject obj = JsonNode.Parse(resourceAccessJson) as JsonObject;
-                        
-                        var roles = obj["velo-backend"]["roles"].AsArray().Select(x => x.AsValue().GetValue<string>());
-                        tokenValidationContext.Principal.AddIdentity(new ClaimsIdentity(new[]
-                        {
-                            new Claim(Claims.ActivityEdit, roles.Contains("activity", StringComparer.InvariantCultureIgnoreCase) ? "true" : "false"),
-                            new Claim(Claims.BikeEdit, roles.Contains("velo", StringComparer.InvariantCultureIgnoreCase) ? "true" : "false"),
-                            new Claim(Claims.WeatherEdit, roles.Contains("wetter", StringComparer.InvariantCultureIgnoreCase) ? "true" : "false")
-                        }));
-                    }
-                }
-            };
-        });
+                };
+            });
 
         services.AddAuthorization(options =>
         {
-            options.AddPolicy(PolicyNames.Activity,policy => policy.RequireClaim(Claims.ActivityEdit, "true"));
-            options.AddPolicy(PolicyNames.Bike,policy => policy.RequireClaim(Claims.BikeEdit, "true"));
-            options.AddPolicy(PolicyNames.Weather,policy => policy.RequireClaim(Claims.WeatherEdit, "true"));
-        });        
+            options.AddPolicy(PolicyNames.Activity, policy => policy.RequireClaim(Claims.ActivityEdit, "true"));
+            options.AddPolicy(PolicyNames.Bike, policy => policy.RequireClaim(Claims.BikeEdit, "true"));
+            options.AddPolicy(PolicyNames.Weather, policy => policy.RequireClaim(Claims.WeatherEdit, "true"));
+            options.AddPolicy(PolicyNames.Email,policy => policy
+                .RequireClaim(Claims.SendMails, "true")
+                .AddAuthenticationSchemes("LogDbJwtAuthenticationScheme"));
+        });
 
         services.AddScoped<IBikeRepository, DirectusBikeRepository>();
         services.AddScoped<IWeatherRepository, DirectusWeatherRepository>();
         services.AddScoped<IActivityRepository, DirectusActivityRepository>();
+        services.AddEndpointsApiExplorer();
+        services.AddSwaggerGen();
 
         services.AddControllersWithViews();
         // In production, the Angular files will be served from this directory
@@ -122,7 +145,10 @@ public class Startup
         {
             app.UseExceptionHandler("/Error");
         }
-        
+
+        app.UseSwagger();
+        app.UseSwaggerUI();
+
         app.UseStaticFiles();
         if (!env.IsDevelopment())
         {
@@ -151,5 +177,40 @@ public class Startup
                 spa.UseAngularCliServer(npmScript: "start");
             }
         });
+    }
+
+    public class LogDbJwtSecurityTokenValidator : ISecurityTokenValidator
+    {
+        private readonly IConfiguration _configuration;
+
+        public LogDbJwtSecurityTokenValidator(IConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
+
+        public bool CanReadToken(string securityToken)
+        {
+            return true;
+        }
+
+        public ClaimsPrincipal ValidateToken(string securityToken, TokenValidationParameters validationParameters, out SecurityToken validatedToken)
+        {
+            using var client = new HttpClient();
+            var message = new HttpRequestMessage(HttpMethod.Get, _configuration["JwtLogDbValidationUrl"]);
+            message.Headers.Add("Authorization", $"Bearer {securityToken}");
+            var response = client.Send(message);
+
+            if (response.IsSuccessStatusCode)
+            {
+                validatedToken = new JsonWebToken(securityToken);
+                return new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("project", "LogDB") }));
+            }
+
+            validatedToken = null;
+            return null;
+        }
+
+        public bool CanValidateToken => true;
+        public int MaximumTokenSizeInBytes { get; set; } = 1000000;
     }
 }
