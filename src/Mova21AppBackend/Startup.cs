@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using System.Net.Http;
 using System.Security.Claims;
 using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -11,8 +10,6 @@ using Microsoft.AspNetCore.SpaServices.AngularCli;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.IdentityModel.JsonWebTokens;
-using Microsoft.IdentityModel.Tokens;
 using Mova21AppBackend.Data.Interfaces;
 using Mova21AppBackend.Data.Models;
 using Mova21AppBackend.Data.Storage;
@@ -91,23 +88,6 @@ public class Startup
                         }
                     }
                 };
-            })
-            .AddJwtBearer("LogDbJwtAuthenticationScheme", o =>
-            {
-                o.SecurityTokenValidators.Clear();
-                o.SecurityTokenValidators.Add(new LogDbJwtSecurityTokenValidator(Configuration));
-                o.Events = new JwtBearerEvents
-                {
-                    OnTokenValidated = async tokenValidationContext =>
-                    {
-                        if (tokenValidationContext.Principal is null)
-                        {
-                            return;
-                        }
-
-                        tokenValidationContext.Principal.AddIdentity(new ClaimsIdentity(new[] { new Claim(Claims.SendMails, "true") }));
-                    }
-                };
             });
 
         services.AddAuthorization(options =>
@@ -115,9 +95,6 @@ public class Startup
             options.AddPolicy(PolicyNames.Activity, policy => policy.RequireClaim(Claims.ActivityEdit, "true"));
             options.AddPolicy(PolicyNames.Bike, policy => policy.RequireClaim(Claims.BikeEdit, "true"));
             options.AddPolicy(PolicyNames.Weather, policy => policy.RequireClaim(Claims.WeatherEdit, "true"));
-            options.AddPolicy(PolicyNames.Email,policy => policy
-                .RequireClaim(Claims.SendMails, "true")
-                .AddAuthenticationSchemes("LogDbJwtAuthenticationScheme"));
         });
 
         services.AddScoped<IBikeRepository, DirectusBikeRepository>();
@@ -177,40 +154,5 @@ public class Startup
                 spa.UseAngularCliServer(npmScript: "start");
             }
         });
-    }
-
-    public class LogDbJwtSecurityTokenValidator : ISecurityTokenValidator
-    {
-        private readonly IConfiguration _configuration;
-
-        public LogDbJwtSecurityTokenValidator(IConfiguration configuration)
-        {
-            _configuration = configuration;
-        }
-
-        public bool CanReadToken(string securityToken)
-        {
-            return true;
-        }
-
-        public ClaimsPrincipal ValidateToken(string securityToken, TokenValidationParameters validationParameters, out SecurityToken validatedToken)
-        {
-            using var client = new HttpClient();
-            var message = new HttpRequestMessage(HttpMethod.Get, _configuration["JwtLogDbValidationUrl"]);
-            message.Headers.Add("Authorization", $"Bearer {securityToken}");
-            var response = client.Send(message);
-
-            if (response.IsSuccessStatusCode)
-            {
-                validatedToken = new JsonWebToken(securityToken);
-                return new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("project", "LogDB") }));
-            }
-
-            validatedToken = null;
-            return null;
-        }
-
-        public bool CanValidateToken => true;
-        public int MaximumTokenSizeInBytes { get; set; } = 1000000;
     }
 }

@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Net;
+using System.Net.Http;
 using System.Net.Mail;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 
 namespace Mova21AppBackend.Controllers;
-
-[Authorize(PolicyNames.Email)]
 [ApiController]
 [Route("api/[controller]")]
 public class EmailController : Controller
@@ -30,8 +28,13 @@ public class EmailController : Controller
     /// <param name="attachment">The attachment to be sent, can be null.</param>
     /// <returns></returns>
     [HttpPost]
-    public async Task SendMail([FromForm] string receivers, [FromForm] string subject, [FromForm] string body, IFormFile? attachment)
+    public async Task<ActionResult> SendMail([FromForm]string logDbJwtToken, [FromForm] string receivers, [FromForm] string subject, [FromForm] string body, IFormFile? attachment)
     {
+        if (!IsTokenValid(logDbJwtToken))
+        {
+            return Forbid();
+        }
+        
         using var smtp = new SmtpClient
         {
             Host = _configuration["Smtp:Host"],
@@ -52,5 +55,16 @@ public class EmailController : Controller
             message.Attachments.Add(new Attachment(attachment.OpenReadStream(), attachment.FileName));
         }
         await smtp.SendMailAsync(message);
+        return Ok();
+    }
+
+    private bool IsTokenValid(string logDbJwtToken)
+    {
+        using var client = new HttpClient();
+        var message = new HttpRequestMessage(HttpMethod.Get, _configuration["JwtLogDbValidationUrl"]);
+        message.Headers.Add("Authorization", $"Bearer {logDbJwtToken}");
+        var response = client.Send(message);
+
+        return response.IsSuccessStatusCode;
     }
 }
