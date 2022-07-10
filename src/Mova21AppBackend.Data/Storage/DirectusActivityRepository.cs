@@ -46,7 +46,6 @@ public class DirectusActivityRepository : BaseDirectusRepository, IActivityRepos
         {
             return createResponse.Data?.ToActivityEntry() ?? throw new ArgumentNullException();
         }
-
         throw new Exception("Failed to create activity entry in Directus: ", createResponse.ErrorException);
     }
 }
