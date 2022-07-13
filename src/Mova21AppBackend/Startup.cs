@@ -1,7 +1,3 @@
-using System;
-using System.Linq;
-using System.Security.Claims;
-using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -13,146 +9,163 @@ using Microsoft.Extensions.Hosting;
 using Mova21AppBackend.Data.Interfaces;
 using Mova21AppBackend.Data.Models;
 using Mova21AppBackend.Data.Storage;
+using System;
+using System.Linq;
+using System.Security.Claims;
+using System.Text.Json.Nodes;
 
-namespace Mova21AppBackend;
-
-public class Startup
+namespace Mova21AppBackend
 {
-    private const string OpenIdConnectPolicyName = "OpenIDConnectPolicy";
 
-    public Startup(IWebHostEnvironment env, IConfiguration configuration)
+    public class Startup
     {
-        Environment = env;
-        Configuration = configuration;
-    }
+        private const string OpenIdConnectPolicyName = "OpenIDConnectPolicy";
 
-    public IConfiguration Configuration { get; }
-    public IWebHostEnvironment Environment { get; }
-
-    // This method gets called by the runtime. Use this method to add services to the container.
-    public void ConfigureServices(IServiceCollection services)
-    {
-        services.AddAuthentication(options =>
+        public Startup(IWebHostEnvironment env, IConfiguration configuration)
         {
-            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-        })
-            .AddJwtBearer(o =>
+            Environment = env;
+            Configuration = configuration;
+        }
+
+        public IConfiguration Configuration { get; }
+        public IWebHostEnvironment Environment { get; }
+
+        // This method gets called by the runtime. Use this method to add services to the container.
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddAuthentication(options =>
             {
-                o.Authority = Configuration["Jwt:Authority"];
-                o.TokenValidationParameters.ValidateAudience = false;
-                o.MetadataAddress = Configuration["Jwt:MetadataAddress"];
-                o.Events = new JwtBearerEvents
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+                .AddJwtBearer(o =>
                 {
-                    OnAuthenticationFailed = c =>
+                    o.Authority = Configuration["Jwt:Authority"];
+                    o.TokenValidationParameters.ValidateAudience = false;
+                    o.MetadataAddress = Configuration["Jwt:MetadataAddress"];
+                    o.Events = new JwtBearerEvents
                     {
-                        c.NoResult();
+                        OnAuthenticationFailed = c =>
+                        {
+                            c.NoResult();
 
-                        c.Response.StatusCode = 500;
-                        c.Response.ContentType = "text/plain";
-                        if (Environment.IsDevelopment())
-                        {
-                            return c.Response.WriteAsync(c.Exception.ToString());
-                        }
-                        return c.Response.WriteAsync("An error occurred processing your authentication.");
-                    },
-                    OnTokenValidated = async tokenValidationContext =>
-                    {
-                        if (tokenValidationContext.Principal is null)
-                        {
-                            return;
-                        }
-
-                        var resourceAccessJson = tokenValidationContext.Principal.Claims
-                            .FirstOrDefault(c => c.Type == "resource_access")?.Value;
-                        if (resourceAccessJson == null)
-                        {
-                            tokenValidationContext.Principal.AddIdentity(new ClaimsIdentity(new[]
+                            c.Response.StatusCode = 500;
+                            c.Response.ContentType = "text/plain";
+                            if (Environment.IsDevelopment())
                             {
+                                return c.Response.WriteAsync(c.Exception.ToString());
+                            }
+                            return c.Response.WriteAsync("An error occurred processing your authentication.");
+                        },
+                        OnTokenValidated = async tokenValidationContext =>
+                        {
+                            if (tokenValidationContext.Principal is null)
+                            {
+                                return;
+                            }
+
+                            var resourceAccessJson = tokenValidationContext.Principal.Claims
+                                .FirstOrDefault(c => c.Type == "resource_access")?.Value;
+                            if (resourceAccessJson == null)
+                            {
+                                tokenValidationContext.Principal.AddIdentity(new ClaimsIdentity(new[]
+                                {
                                 new Claim(Claims.ActivityEdit, "false"),
                                 new Claim(Claims.BikeEdit, "false"),
                                 new Claim(Claims.WeatherEdit, "false")
-                            }));
-                        }
-                        else
-                        {
-                            JsonObject obj = JsonNode.Parse(resourceAccessJson) as JsonObject;
-
-                            var roles = obj["velo-backend"]["roles"].AsArray().Select(x => x.AsValue().GetValue<string>());
-                            tokenValidationContext.Principal.AddIdentity(new ClaimsIdentity(new[]
+                                }));
+                            }
+                            else
                             {
+                                JsonObject obj = JsonNode.Parse(resourceAccessJson) as JsonObject;
+
+                                var roles = obj["velo-backend"]["roles"].AsArray().Select(x => x.AsValue().GetValue<string>());
+                                tokenValidationContext.Principal.AddIdentity(new ClaimsIdentity(new[]
+                                {
                                 new Claim(Claims.ActivityEdit, roles.Contains("activity", StringComparer.InvariantCultureIgnoreCase) ? "true" : "false"),
                                 new Claim(Claims.BikeEdit, roles.Contains("velo", StringComparer.InvariantCultureIgnoreCase) ? "true" : "false"),
                                 new Claim(Claims.WeatherEdit, roles.Contains("wetter", StringComparer.InvariantCultureIgnoreCase) ? "true" : "false")
-                            }));
+                                }));
+                            }
                         }
-                    }
-                };
+                    };
+                });
+
+            services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll",
+                    policy =>
+                    {
+                        policy.WithOrigins("*");
+                    });
             });
 
-        services.AddAuthorization(options =>
-        {
-            options.AddPolicy(PolicyNames.Activity, policy => policy.RequireClaim(Claims.ActivityEdit, "true"));
-            options.AddPolicy(PolicyNames.Bike, policy => policy.RequireClaim(Claims.BikeEdit, "true"));
-            options.AddPolicy(PolicyNames.Weather, policy => policy.RequireClaim(Claims.WeatherEdit, "true"));
-        });
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy(PolicyNames.Activity, policy => policy.RequireClaim(Claims.ActivityEdit, "true"));
+                options.AddPolicy(PolicyNames.Bike, policy => policy.RequireClaim(Claims.BikeEdit, "true"));
+                options.AddPolicy(PolicyNames.Weather, policy => policy.RequireClaim(Claims.WeatherEdit, "true"));
+            });
 
-        services.AddScoped<IBikeRepository, DirectusBikeRepository>();
-        services.AddScoped<IWeatherRepository, DirectusWeatherRepository>();
-        services.AddScoped<IActivityRepository, DirectusActivityRepository>();
-        services.AddEndpointsApiExplorer();
-        services.AddSwaggerGen();
+            services.AddScoped<IBikeRepository, DirectusBikeRepository>();
+            services.AddScoped<IWeatherRepository, DirectusWeatherRepository>();
+            services.AddScoped<IActivityRepository, DirectusActivityRepository>();
+            services.AddEndpointsApiExplorer();
+            services.AddSwaggerGen();
 
-        services.AddControllersWithViews();
-        // In production, the Angular files will be served from this directory
-        services.AddSpaStaticFiles(configuration =>
-        {
-            configuration.RootPath = "ClientApp/dist";
-        });
-    }
-
-    // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-    {
-        if (env.IsDevelopment())
-        {
-            app.UseDeveloperExceptionPage();
-        }
-        else
-        {
-            app.UseExceptionHandler("/Error");
+            services.AddControllersWithViews();
+            // In production, the Angular files will be served from this directory
+            services.AddSpaStaticFiles(configuration =>
+            {
+                configuration.RootPath = "ClientApp/dist";
+            });
         }
 
-        app.UseSwagger();
-        app.UseSwaggerUI();
-
-        app.UseStaticFiles();
-        if (!env.IsDevelopment())
+        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            app.UseSpaStaticFiles();
-        }
-
-        app.UseAuthentication();
-
-        app.UseRouting();
-
-        app.UseAuthorization();
-
-        app.UseEndpoints(endpoints =>
-        {
-            endpoints.MapControllerRoute(
-                name: "default",
-                pattern: "{controller}/{action=Index}/{id?}").RequireCors(OpenIdConnectPolicyName);
-        });
-
-        app.UseSpa(spa =>
-        {
-            spa.Options.SourcePath = "ClientApp";
-
             if (env.IsDevelopment())
             {
-                spa.UseAngularCliServer(npmScript: "start");
+                app.UseDeveloperExceptionPage();
             }
-        });
+            else
+            {
+                app.UseExceptionHandler("/Error");
+            }
+
+            app.UseSwagger();
+            app.UseSwaggerUI();
+
+            app.UseStaticFiles();
+            if (!env.IsDevelopment())
+            {
+                app.UseSpaStaticFiles();
+            }
+
+            app.UseAuthentication();
+
+            app.UseRouting();
+
+            app.UseCors();
+
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllerRoute(
+                    name: "default",
+                    pattern: "{controller}/{action=Index}/{id?}").RequireCors(OpenIdConnectPolicyName);
+            });
+
+            app.UseSpa(spa =>
+            {
+                spa.Options.SourcePath = "ClientApp";
+
+                if (env.IsDevelopment())
+                {
+                    spa.UseAngularCliServer(npmScript: "start");
+                }
+            });
+        }
     }
 }
